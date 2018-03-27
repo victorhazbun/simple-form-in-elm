@@ -11,15 +11,22 @@ import Json.Encode as Encode
 type alias Model =
     { email : String
     , message : String
-    , submitting : Bool
+    , status : SubmissionStatus
     }
+
+
+type SubmissionStatus
+    = NotSubmitted
+    | InProcess
+    | Succeeded
+    | Failed
 
 
 initialModel : Model
 initialModel =
     { email = ""
     , message = ""
-    , submitting = False
+    , status = NotSubmitted
     }
 
 
@@ -50,10 +57,13 @@ update msg model =
             ( { model | message = m }, Cmd.none )
 
         Submit ->
-            ( { model | submitting = True }, submit model )
+            ( { model | status = InProcess }, submit model )
 
-        SubmitResponse _ ->
-            ( model, Cmd.none )
+        SubmitResponse (Ok ()) ->
+            ( { model | status = Succeeded }, Cmd.none )
+
+        SubmitResponse (Err _) ->
+            ( { model | status = Failed }, Cmd.none )
 
 
 submit : Model -> Cmd Msg
@@ -81,25 +91,44 @@ view : Model -> Html Msg
 view model =
     Html.form
         [ onSubmit Submit ]
-        [ header
-        , body
-        , footer
+        [ header model
+        , body model
+        , footer model
         , div [] [ model |> toString |> text ]
         ]
 
 
-header =
+header model =
     div []
-        [ h1 [] [ text "Contact us" ] ]
+        [ h1 [] [ text "Contact us" ]
+        , renderStatus model.status
+        ]
 
 
-body =
+renderStatus status =
+    case status of
+        NotSubmitted ->
+            div [] []
+
+        InProcess ->
+            div [] [ text "Your request is being sent" ]
+
+        Succeeded ->
+            div [] [ text "Your request has been received" ]
+
+        Failed ->
+            div [ class "alert alert-danger" ]
+                [ text "Ops! There was an error, please try again" ]
+
+
+body model =
     div []
         [ div []
             [ input
                 [ placeholder "your email"
                 , type_ "email"
                 , onInput InputEmail
+                , value model.email
                 ]
                 []
             ]
@@ -108,13 +137,14 @@ body =
                 [ placeholder "your message"
                 , rows 7
                 , onInput InputMessage
+                , value model.message
                 ]
                 []
             ]
         ]
 
 
-footer =
+footer model =
     div []
         [ button
             [ type_ "submit" ]
