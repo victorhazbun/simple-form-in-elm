@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput, onSubmit)
 
 
 type alias Model =
     { email : String
     , message : String
+    , submitting : Bool
     }
 
 
@@ -15,6 +16,7 @@ initialModel : Model
 initialModel =
     { email = ""
     , message = ""
+    , submitting = False
     }
 
 
@@ -38,20 +40,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         InputEmail e ->
-            ( { model | email = String.toLower e }, Cmd.none )
+            ( { model | email = e }, Cmd.none )
 
         InputMessage m ->
             ( { model | message = m }, Cmd.none )
 
         Submit ->
-            ( model, Cmd.none )
+            ( { model | submitting = True }, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    Html.form []
+    Html.form
+        [ onSubmit Submit ]
         [ header
-        , body model
+        , body
         , footer
         , div [] [ model |> toString |> text ]
         ]
@@ -62,14 +65,13 @@ header =
         [ h1 [] [ text "Contact us" ] ]
 
 
-body model =
+body =
     div []
         [ div []
             [ input
                 [ placeholder "your email"
                 , type_ "email"
                 , onInput InputEmail
-                , value model.email
                 ]
                 []
             ]
@@ -86,4 +88,10 @@ body model =
 
 footer =
     div []
-        [ button [] [ text "Submit" ] ]
+        [ button
+            [ type_ "submit" ]
+            [ text "Submit" ]
+        , button
+            [ type_ "button" ]
+            [ text "Cancel" ]
+        ]
