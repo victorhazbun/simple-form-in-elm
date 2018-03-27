@@ -60,7 +60,13 @@ update msg model =
             ( { model | status = InProcess }, submit model )
 
         SubmitResponse (Ok ()) ->
-            ( { model | status = Succeeded }, Cmd.none )
+            ( { model
+                | status = Succeeded
+                , email = ""
+                , message = ""
+              }
+            , Cmd.none
+            )
 
         SubmitResponse (Err _) ->
             ( { model | status = Failed }, Cmd.none )
@@ -147,7 +153,9 @@ body model =
 footer model =
     div []
         [ button
-            [ type_ "submit" ]
+            [ type_ "submit"
+            , disabled (model.status == InProcess)
+            ]
             [ text "Submit" ]
         , button
             [ type_ "button" ]
