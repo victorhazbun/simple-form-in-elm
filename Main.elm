@@ -38,7 +38,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         InputEmail e ->
-            ( { model | email = e }, Cmd.none )
+            ( { model | email = String.toLower e }, Cmd.none )
 
         InputMessage m ->
             ( { model | message = m }, Cmd.none )
@@ -51,7 +51,7 @@ view : Model -> Html Msg
 view model =
     Html.form []
         [ header
-        , body
+        , body model
         , footer
         , div [] [ model |> toString |> text ]
         ]
@@ -62,13 +62,14 @@ header =
         [ h1 [] [ text "Contact us" ] ]
 
 
-body =
+body model =
     div []
         [ div []
             [ input
                 [ placeholder "your email"
                 , type_ "email"
                 , onInput InputEmail
+                , value model.email
                 ]
                 []
             ]
