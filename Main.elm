@@ -6,8 +6,24 @@ import Html.Attributes exposing (..)
 
 main : Html a
 main =
-    div
-        [ id "hello"
-        , class "my-class"
+    Html.form
+        []
+        [ div []
+            [ h1 [] [ text "Contact us" ] ]
+        , div []
+            [ input
+                [ placeholder "your email"
+                , type_ "email"
+                ]
+                []
+            ]
+        , div []
+            [ textarea
+                [ placeholder "your message"
+                , rows 7
+                ]
+                []
+            ]
+        , div []
+            [ button [] [ text "Submit" ] ]
         ]
-        [ text "Hello Forms!" ]
