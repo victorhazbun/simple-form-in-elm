@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onInput)
 
 
 type alias Model =
@@ -18,8 +19,8 @@ initialModel =
 
 
 type Msg
-    = InputEmail
-    | InputMessage
+    = InputEmail String
+    | InputMessage String
     | Submit
 
 
@@ -35,7 +36,15 @@ main =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        InputEmail e ->
+            ( { model | email = e }, Cmd.none )
+
+        InputMessage m ->
+            ( { model | message = m }, Cmd.none )
+
+        Submit ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -44,6 +53,7 @@ view model =
         [ header
         , body
         , footer
+        , div [] [ model |> toString |> text ]
         ]
 
 
@@ -58,6 +68,7 @@ body =
             [ input
                 [ placeholder "your email"
                 , type_ "email"
+                , onInput InputEmail
                 ]
                 []
             ]
@@ -65,6 +76,7 @@ body =
             [ textarea
                 [ placeholder "your message"
                 , rows 7
+                , onInput InputMessage
                 ]
                 []
             ]
