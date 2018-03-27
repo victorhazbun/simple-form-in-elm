@@ -2,15 +2,16 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onSubmit, onClick, onInput)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
-import Json.Encode as Encode
 import Json.Decode as Json
+import Json.Encode as Encode
 
 
 type alias Model =
     { email : String
     , message : String
+    , submitting : Bool
     }
 
 
@@ -18,6 +19,7 @@ initialModel : Model
 initialModel =
     { email = ""
     , message = ""
+    , submitting = False
     }
 
 
@@ -25,7 +27,7 @@ type Msg
     = InputEmail String
     | InputMessage String
     | Submit
-    | SubmitResponse (Result Http.Error String)
+    | SubmitResponse (Result Http.Error ())
 
 
 main : Program Never Model Msg
@@ -42,13 +44,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         InputEmail e ->
-            ( { model | email = String.toLower e }, Cmd.none )
+            ( { model | email = e }, Cmd.none )
 
         InputMessage m ->
             ( { model | message = m }, Cmd.none )
 
         Submit ->
-            ( model, submit model )
+            ( { model | submitting = True }, submit model )
 
         SubmitResponse _ ->
             ( model, Cmd.none )
@@ -60,15 +62,17 @@ submit model =
         url =
             "http://localhost:3000/api/contact"
 
-        payload =
+        json =
             Encode.object
                 [ ( "email", Encode.string model.email )
                 , ( "message", Encode.string model.message )
                 ]
 
-        request : Http.Request String
+        decoder =
+            Json.string |> Json.map (always ())
+
         request =
-            Http.post url (Http.jsonBody payload) Json.string
+            Http.post url (Http.jsonBody json) decoder
     in
         request |> Http.send SubmitResponse
 
@@ -76,9 +80,9 @@ submit model =
 view : Model -> Html Msg
 view model =
     Html.form
-        []
+        [ onSubmit Submit ]
         [ header
-        , body model
+        , body
         , footer
         , div [] [ model |> toString |> text ]
         ]
@@ -89,14 +93,13 @@ header =
         [ h1 [] [ text "Contact us" ] ]
 
 
-body model =
+body =
     div []
         [ div []
             [ input
                 [ placeholder "your email"
                 , type_ "email"
                 , onInput InputEmail
-                , value model.email
                 ]
                 []
             ]
@@ -114,8 +117,9 @@ body model =
 footer =
     div []
         [ button
-            [ type_ "button"
-            , onClick Submit
-            ]
+            [ type_ "submit" ]
             [ text "Submit" ]
+        , button
+            [ type_ "button" ]
+            [ text "Cancel" ]
         ]
