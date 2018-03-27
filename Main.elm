@@ -6,11 +6,21 @@ import Html.Attributes exposing (..)
 
 main : Html a
 main =
-    Html.form
-        []
+    Html.form []
+        [ header
+        , body
+        , footer
+        ]
+
+
+header =
+    div []
+        [ h1 [] [ text "Contact us" ] ]
+
+
+body =
+    div []
         [ div []
-            [ h1 [] [ text "Contact us" ] ]
-        , div []
             [ input
                 [ placeholder "your email"
                 , type_ "email"
@@ -24,6 +34,9 @@ main =
                 ]
                 []
             ]
-        , div []
-            [ button [] [ text "Submit" ] ]
         ]
+
+
+footer =
+    div []
+        [ button [] [ text "Submit" ] ]
